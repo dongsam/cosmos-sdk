@@ -11,7 +11,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authtxb "github.com/cosmos/cosmos-sdk/x/auth/client/txbuilder"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/go-amino"
@@ -55,6 +54,7 @@ recommended to set such parameters manually.`,
 	cmd.Flags().Bool(flagOffline, false, "Offline mode. Do not query local cache.")
 	cmd.Flags().String(flagOutfile, "",
 		"The document will be written to the given file instead of STDOUT")
+	cmd.MarkFlagRequired(client.FlagName)
 
 	// Add the flags here and return the command
 	return client.PostCommands(cmd)[0]
@@ -74,17 +74,14 @@ func makeSignCmd(cdc *amino.Codec) func(cmd *cobra.Command, args []string) error
 			return nil
 		}
 
-		name := viper.GetString(client.FlagName)
-		if name == "" {
-			return errors.New("required flag \"name\" has not been set")
-		}
 		cliCtx := context.NewCLIContext().WithCodec(cdc).WithAccountDecoder(cdc)
 		txBldr := authtxb.NewTxBuilderFromCLI()
 
 		// if --signature-only is on, then override --append
 		generateSignatureOnly := viper.GetBool(flagSigOnly)
 		appendSig := viper.GetBool(flagAppend) && !generateSignatureOnly
-		newTx, err := utils.SignStdTx(txBldr, cliCtx, name, stdTx, appendSig, viper.GetBool(flagOffline))
+		newTx, err := utils.SignStdTx(txBldr, cliCtx, viper.GetString(client.FlagName),
+			stdTx, appendSig, viper.GetBool(flagOffline))
 		if err != nil {
 			return err
 		}
