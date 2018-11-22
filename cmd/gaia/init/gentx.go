@@ -180,6 +180,7 @@ func readUnsignedGentxFile(cdc *codec.Codec, r io.Reader) (auth.StdTx, error) {
 	return stdTx, err
 }
 
+// nolint: errcheck
 func writeSignedGenTx(cdc *codec.Codec, outputDocument string, tx auth.StdTx) error {
 	outputFile, err := os.OpenFile(outputDocument, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
 	if err != nil {
@@ -190,6 +191,6 @@ func writeSignedGenTx(cdc *codec.Codec, outputDocument string, tx auth.StdTx) er
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(outputFile, "%s\n", json)
-	return nil
+	_, err = fmt.Fprintf(outputFile, "%s\n", json)
+	return err
 }
