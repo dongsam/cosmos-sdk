@@ -117,7 +117,11 @@ following delegation and commission default parameters:
 			if err != nil {
 				return err
 			}
-			return writeSignedGenTx(cdc, outputDocument, signedTx)
+			if err := writeSignedGenTx(cdc, outputDocument, signedTx); err != nil {
+				return err
+			}
+			fmt.Fprintf(os.Stderr, "Genesis transaction written to %q\n", outputDocument)
+			return nil
 		},
 	}
 
