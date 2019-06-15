@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	types "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
-
+// TODO: change Delegator
 // Slash a validator for an infraction committed at a known height
 // Find the contributing stake at that height and burn the specified slashFactor
 // of it, updating unbonding delegations & redelegations appropriately
@@ -152,7 +152,7 @@ func (k Keeper) Unjail(ctx sdk.Context, consAddr sdk.ConsAddress) {
 	// TODO Return event(s), blocked on https://github.com/tendermint/tendermint/pull/1803
 	return
 }
-
+// TODO: change Delegator
 // slash an unbonding delegation and update the pool
 // return the amount that would have been slashed assuming
 // the unbonding delegation had enough stake to slash
@@ -205,7 +205,7 @@ func (k Keeper) slashUnbondingDelegation(ctx sdk.Context, unbondingDelegation ty
 
 	return totalSlashAmount
 }
-
+// TODO: change Delegator
 // slash a redelegation and update the pool
 // return the amount that would have been slashed assuming
 // the unbonding delegation had enough stake to slash

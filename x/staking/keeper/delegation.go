@@ -305,7 +305,7 @@ func (k Keeper) GetRedelegationsFromValidator(ctx sdk.Context, valAddr sdk.ValAd
 	}
 	return reds
 }
-
+// TODO: change Delegator
 // check if validator is receiving a redelegation
 func (k Keeper) HasReceivingRedelegation(ctx sdk.Context,
 	delAddr sdk.AccAddress, valDstAddr sdk.ValAddress) bool {
@@ -553,7 +553,10 @@ func (k Keeper) ChangeDelegator(ctx sdk.Context, srcDelAddr sdk.AccAddress, dstD
 		return types.ErrNoDelegatorForAddress(k.Codespace())
 	}
 
-	// TODO: check is it not unbonding, redelegation period or not
+	// check if this is a transitive redelegation
+	if k.HasReceivingRedelegation(ctx, srcDelAddr, valAddr) {
+		return types.ErrTransitiveRedelegation(k.Codespace())
+	}
 
 	// call the before-delegation-modified hook
 	k.BeforeDelegationSharesModified(ctx, srcDelAddr, valAddr)
