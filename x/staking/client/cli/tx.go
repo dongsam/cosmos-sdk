@@ -184,12 +184,12 @@ $ gaiacli tx staking redelegate cosmosvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmq
 }
 
 
-// GetCmdChangedelegator the change delegator of delegation command.
-func GetCmdChangedelegator(storeName string, cdc *codec.Codec) *cobra.Command {
+// GetCmdChangeDelegator the change delegator of delegation command.
+func GetCmdChangeDelegator(storeName string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "change-delegator [dst-delegator-addr] [validator-addr]",
+		Use:   "change-delegator [dst-delegator-addr] [validator-addr] [amount]",
 		Short: "change delegator of delegation",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.ExactArgs(3),
 		Long: strings.TrimSpace(`change delegator of delegation, TBD more detail:
 
 $ gaiacli tx staking change-delegator cosmos12a5v5w6a7g53ra4z8m4f6d5u7mverdhf9zwz7r cosmosvaloper1l2rsakp388kuv9k8qzq6lrm9taddae7fpx59wm --from mykey
@@ -212,7 +212,12 @@ $ gaiacli tx staking change-delegator cosmos12a5v5w6a7g53ra4z8m4f6d5u7mverdhf9zw
 				return err
 			}
 
-			msg := staking.NewMsgChangeDelegator(srcDelAddr, dstDelAddr, valAddr)
+			amount, err := sdk.ParseCoin(args[2])
+			if err != nil {
+				return err
+			}
+
+			msg := staking.NewMsgChangeDelegator(srcDelAddr, dstDelAddr, valAddr, amount)
 			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg}, false)
 		},
 	}

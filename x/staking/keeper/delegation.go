@@ -545,12 +545,18 @@ func (k Keeper) unbond(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValA
 	return amount, nil
 }
 
-func (k Keeper) ChangeDelegator(ctx sdk.Context, srcDelAddr sdk.AccAddress, dstDelAddr sdk.AccAddress, valAddr sdk.ValAddress) (err sdk.Error) {
+func (k Keeper) ChangeDelegator(ctx sdk.Context, srcDelAddr sdk.AccAddress, dstDelAddr sdk.AccAddress, valAddr sdk.ValAddress, amount sdk.Coin) (err sdk.Error) {
 	// check if a delegation object exists in the store
 	fmt.Println(srcDelAddr, dstDelAddr, valAddr)
 	delegation, found := k.GetDelegation(ctx, srcDelAddr, valAddr)
 	if !found {
 		return types.ErrNoDelegatorForAddress(k.Codespace())
+	}
+
+	// check delegation has shares greater then or equal amount
+	amtDec := amount.Amount.ToDec()
+	if delegation.Shares.LT(amtDec){
+		return types.ErrNotEnoughDelegationShares(k.Codespace(), delegation.Shares.String())
 	}
 
 	// check if this is a transitive redelegation
@@ -564,18 +570,24 @@ func (k Keeper) ChangeDelegator(ctx sdk.Context, srcDelAddr sdk.AccAddress, dstD
 	// if already exist dst pair
 	dstDelegation, found := k.GetDelegation(ctx, dstDelAddr, valAddr)
 	if !found {
-		dstDelegation = types.NewDelegation(dstDelAddr, valAddr, delegation.Shares)
+		dstDelegation = types.NewDelegation(dstDelAddr, valAddr, amtDec)
 	} else {
 		// call the before-delegation-modified hook
 		k.BeforeDelegationSharesModified(ctx, dstDelAddr, valAddr)
-		dstDelegation.Shares = dstDelegation.Shares.Add(delegation.Shares)
+		dstDelegation.Shares = dstDelegation.Shares.Add(amtDec)
 	}
 
-	k.RemoveDelegation(ctx, delegation)
-	checkDel, found := k.GetDelegation(ctx, srcDelAddr, valAddr)
-	if found {
-		fmt.Println(checkDel)
+	if delegation.Shares.GT(amtDec) {
+		delegation.Shares = delegation.Shares.Sub(amtDec)
+		k.SetDelegation(ctx, delegation)
+	} else{
+		k.RemoveDelegation(ctx, delegation)
+		checkDel, found := k.GetDelegation(ctx, srcDelAddr, valAddr)
+		if found {
+			fmt.Println(checkDel)
+		}
 	}
+
 	k.SetDelegation(ctx, dstDelegation)
 	// call the after delegation modification hook
 	k.AfterDelegationModified(ctx, dstDelegation.DelegatorAddress, dstDelegation.ValidatorAddress)

@@ -256,7 +256,7 @@ func handleMsgUndelegate(ctx sdk.Context, msg types.MsgUndelegate, k keeper.Keep
 }
 
 func handleMsgChangeDelegator(ctx sdk.Context, msg types.MsgChangeDelegator, k keeper.Keeper) sdk.Result {
-	err := k.ChangeDelegator(ctx, msg.DelegatorSrcAddress, msg.DelegatorDstAddress, msg.ValidatorAddress)
+	err := k.ChangeDelegator(ctx, msg.DelegatorSrcAddress, msg.DelegatorDstAddress, msg.ValidatorAddress, msg.Amount)
 	if err != nil {
 		return err.Result()
 	}
@@ -266,7 +266,6 @@ func handleMsgChangeDelegator(ctx sdk.Context, msg types.MsgChangeDelegator, k k
 		tags.SrcDelegator, msg.DelegatorSrcAddress.String(),
 		tags.DstDelegator, msg.DelegatorDstAddress.String(),
 	)
-	//
 	return sdk.Result{Tags: tags}
 }
 

@@ -346,21 +346,22 @@ type MsgChangeDelegator struct {
 	DelegatorSrcAddress sdk.AccAddress   	`json:"delegator_src_address"`
 	DelegatorDstAddress sdk.AccAddress	    `json:"delegator_dst_address"`
 	ValidatorAddress sdk.ValAddress 	    `json:"validator_address"`
-	//Amount           sdk.Coin       `json:"amount"`
+	Amount           sdk.Coin               `json:"amount"`
 }
 
 type msgChangeDelegatorJSON struct {
 	DelegatorSrcAddress  sdk.AccAddress `json:"delegator_src_address"`
 	DelegatorDstAddress  sdk.AccAddress `json:"delegator_dst_address"`
-	ValidatorAddress  sdk.ValAddress `json:"validator_address"`
+	ValidatorAddress     sdk.ValAddress `json:"validator_address"`
+	Amount               sdk.Coin       `json:"amount"`
 }
 
-func NewMsgChangeDelegator(srcDelAddr sdk.AccAddress, dstDelAddr sdk.AccAddress, valAddr sdk.ValAddress) MsgChangeDelegator {
+func NewMsgChangeDelegator(srcDelAddr sdk.AccAddress, dstDelAddr sdk.AccAddress, valAddr sdk.ValAddress, amount sdk.Coin) MsgChangeDelegator {
 	return MsgChangeDelegator{
 		DelegatorSrcAddress: srcDelAddr,
 		DelegatorDstAddress: dstDelAddr,
 		ValidatorAddress: valAddr,
-		//Amount:           amount,
+		Amount:           amount,
 	}
 }
 //nolint
@@ -395,19 +396,21 @@ func (msg MsgChangeDelegator) MarshalJSON() ([]byte, error) {
 		DelegatorSrcAddress:    msg.DelegatorSrcAddress,
 		DelegatorDstAddress:    msg.DelegatorDstAddress,
 		ValidatorAddress:  		msg.ValidatorAddress,
+		Amount:					msg.Amount,
 	})
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface to provide custom
-// JSON deserialization of the MsgCreateValidator type.
+// JSON deserialization of the MsgChangeDelegatorJSON type.
 func (msg *MsgChangeDelegator) UnmarshalJSON(bz []byte) error {
-	var msgCreateValJSON msgChangeDelegatorJSON
-	if err := json.Unmarshal(bz, &msgCreateValJSON); err != nil {
+	var msgChangeDelegatorJSON msgChangeDelegatorJSON
+	if err := json.Unmarshal(bz, &msgChangeDelegatorJSON); err != nil {
 		return err
 	}
 
-	msg.DelegatorSrcAddress = msgCreateValJSON.DelegatorSrcAddress
-	msg.DelegatorDstAddress = msgCreateValJSON.DelegatorDstAddress
-	msg.ValidatorAddress = msgCreateValJSON.ValidatorAddress
+	msg.DelegatorSrcAddress = msgChangeDelegatorJSON.DelegatorSrcAddress
+	msg.DelegatorDstAddress = msgChangeDelegatorJSON.DelegatorDstAddress
+	msg.ValidatorAddress = msgChangeDelegatorJSON.ValidatorAddress
+	msg.Amount = msgChangeDelegatorJSON.Amount
 	return nil
 }
