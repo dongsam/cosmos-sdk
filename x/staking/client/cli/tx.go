@@ -183,6 +183,41 @@ $ gaiacli tx staking redelegate cosmosvaloper1gghjut3ccd8ay0zduzj64hwre2fxs9ldmq
 	}
 }
 
+
+// GetCmdChangedelegator the change delegator of delegation command.
+func GetCmdChangedelegator(storeName string, cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "change-delegator [dst-delegator-addr] [validator-addr]",
+		Short: "change delegator of delegation",
+		Args:  cobra.ExactArgs(2),
+		Long: strings.TrimSpace(`change delegator of delegation, TBD more detail:
+
+$ gaiacli tx staking change-delegator cosmos12a5v5w6a7g53ra4z8m4f6d5u7mverdhf9zwz7r cosmosvaloper1l2rsakp388kuv9k8qzq6lrm9taddae7fpx59wm --from mykey
+`),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			txBldr := authtxb.NewTxBuilderFromCLI().WithTxEncoder(auth.DefaultTxEncoder(cdc))
+			cliCtx := context.NewCLIContext().
+				WithCodec(cdc).
+				WithAccountDecoder(cdc)
+
+			srcDelAddr := cliCtx.GetFromAddress()
+			dstDelAddr, err := sdk.AccAddressFromBech32(args[0])
+			//delegatorAddr, err := sdk.AccAddressFromBech32(args[0])
+			if err != nil {
+				return err
+			}
+
+			valAddr, err := sdk.ValAddressFromBech32(args[1])
+			if err != nil {
+				return err
+			}
+
+			msg := staking.NewMsgChangeDelegator(srcDelAddr, dstDelAddr, valAddr)
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg}, false)
+		},
+	}
+}
+
 // GetCmdUnbond implements the unbond validator command.
 func GetCmdUnbond(storeName string, cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{

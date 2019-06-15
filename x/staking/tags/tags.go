@@ -13,6 +13,8 @@ var (
 	SrcValidator = sdk.TagSrcValidator
 	DstValidator = sdk.TagDstValidator
 	Delegator    = sdk.TagDelegator
+	SrcDelegator = sdk.TagSrcDelegator
+	DstDelegator = sdk.TagDstDelegator
 	Moniker      = "moniker"
 	Identity     = "identity"
 	EndTime      = "end-time"

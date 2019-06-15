@@ -1,6 +1,12 @@
+
+
+
+
+
 package keeper
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -854,4 +860,125 @@ func TestRedelegateFromUnbondedValidator(t *testing.T) {
 	// no red should have been found
 	red, found := keeper.GetRedelegation(ctx, addrDels[0], addrVals[0], addrVals[1])
 	require.False(t, found, "%v", red)
+}
+
+
+// tests ChangeDelegator
+func TestChangeDelegator(t *testing.T) {
+	ctx, _, keeper := CreateTestInput(t, false, 10)
+	pool := keeper.GetPool(ctx)
+
+	//construct the validators
+	amts := []sdk.Int{sdk.NewInt(9), sdk.NewInt(8), sdk.NewInt(7)}
+	var validators [3]types.Validator
+	for i, amt := range amts {
+		validators[i] = types.NewValidator(addrVals[i], PKs[i], types.Description{})
+		validators[i], pool, _ = validators[i].AddTokensFromDel(pool, amt)
+	}
+
+	keeper.SetPool(ctx, pool)
+	validators[0] = TestingUpdateValidator(keeper, ctx, validators[0], true)
+	validators[1] = TestingUpdateValidator(keeper, ctx, validators[1], true)
+	validators[2] = TestingUpdateValidator(keeper, ctx, validators[2], true)
+
+	// first add a validators[0] to delegate too
+
+	bond1to1 := types.NewDelegation(addrDels[0], addrVals[0], sdk.NewDec(9))
+
+	// check the empty keeper first
+	_, found := keeper.GetDelegation(ctx, addrDels[0], addrVals[0])
+	require.False(t, found)
+
+	// set and retrieve a record
+	keeper.SetDelegation(ctx, bond1to1)
+	resBond, found := keeper.GetDelegation(ctx, addrDels[0], addrVals[0])
+	require.True(t, found)
+	require.True(t, bond1to1.Equal(resBond))
+
+	// modify a records, save, and retrieve
+	bond1to1.Shares = sdk.NewDec(99)
+	keeper.SetDelegation(ctx, bond1to1)
+	resBond, found = keeper.GetDelegation(ctx, addrDels[0], addrVals[0])
+	require.True(t, found)
+	require.True(t, bond1to1.Equal(resBond))
+
+	// add some more records
+	bond1to2 := types.NewDelegation(addrDels[0], addrVals[1], sdk.NewDec(9))
+	bond1to3 := types.NewDelegation(addrDels[0], addrVals[2], sdk.NewDec(9))
+	bond2to1 := types.NewDelegation(addrDels[1], addrVals[0], sdk.NewDec(9))
+	bond2to2 := types.NewDelegation(addrDels[1], addrVals[1], sdk.NewDec(9))
+	bond2to3 := types.NewDelegation(addrDels[1], addrVals[2], sdk.NewDec(9))
+	keeper.SetDelegation(ctx, bond1to2)
+	keeper.SetDelegation(ctx, bond1to3)
+	keeper.SetDelegation(ctx, bond2to1)
+	keeper.SetDelegation(ctx, bond2to2)
+	keeper.SetDelegation(ctx, bond2to3)
+
+
+	fmt.Println(bond1to1, bond2to1)
+	//keeper.ChangeDelegator(ctx)
+	//// test all bond retrieve capabilities
+	//resBonds := keeper.GetDelegatorDelegations(ctx, addrDels[0], 5)
+	//require.Equal(t, 3, len(resBonds))
+	//require.True(t, bond1to1.Equal(resBonds[0]))
+	//require.True(t, bond1to2.Equal(resBonds[1]))
+	//require.True(t, bond1to3.Equal(resBonds[2]))
+	//resBonds = keeper.GetAllDelegatorDelegations(ctx, addrDels[0])
+	//require.Equal(t, 3, len(resBonds))
+	//resBonds = keeper.GetDelegatorDelegations(ctx, addrDels[0], 2)
+	//require.Equal(t, 2, len(resBonds))
+	//resBonds = keeper.GetDelegatorDelegations(ctx, addrDels[1], 5)
+	//require.Equal(t, 3, len(resBonds))
+	//require.True(t, bond2to1.Equal(resBonds[0]))
+	//require.True(t, bond2to2.Equal(resBonds[1]))
+	//require.True(t, bond2to3.Equal(resBonds[2]))
+	//allBonds := keeper.GetAllDelegations(ctx)
+	//require.Equal(t, 6, len(allBonds))
+	//require.True(t, bond1to1.Equal(allBonds[0]))
+	//require.True(t, bond1to2.Equal(allBonds[1]))
+	//require.True(t, bond1to3.Equal(allBonds[2]))
+	//require.True(t, bond2to1.Equal(allBonds[3]))
+	//require.True(t, bond2to2.Equal(allBonds[4]))
+	//require.True(t, bond2to3.Equal(allBonds[5]))
+	//
+	//resVals := keeper.GetDelegatorValidators(ctx, addrDels[0], 3)
+	//require.Equal(t, 3, len(resVals))
+	//resVals = keeper.GetDelegatorValidators(ctx, addrDels[1], 4)
+	//require.Equal(t, 3, len(resVals))
+	//
+	//for i := 0; i < 3; i++ {
+	//
+	//	resVal, err := keeper.GetDelegatorValidator(ctx, addrDels[0], addrVals[i])
+	//	require.Nil(t, err)
+	//	require.Equal(t, addrVals[i], resVal.GetOperator())
+	//
+	//	resVal, err = keeper.GetDelegatorValidator(ctx, addrDels[1], addrVals[i])
+	//	require.Nil(t, err)
+	//	require.Equal(t, addrVals[i], resVal.GetOperator())
+	//
+	//	resDels := keeper.GetValidatorDelegations(ctx, addrVals[i])
+	//	require.Len(t, resDels, 2)
+	//}
+	//
+	//// delete a record
+	//keeper.RemoveDelegation(ctx, bond2to3)
+	//_, found = keeper.GetDelegation(ctx, addrDels[1], addrVals[2])
+	//require.False(t, found)
+	//resBonds = keeper.GetDelegatorDelegations(ctx, addrDels[1], 5)
+	//require.Equal(t, 2, len(resBonds))
+	//require.True(t, bond2to1.Equal(resBonds[0]))
+	//require.True(t, bond2to2.Equal(resBonds[1]))
+	//
+	//resBonds = keeper.GetAllDelegatorDelegations(ctx, addrDels[1])
+	//require.Equal(t, 2, len(resBonds))
+	//
+	//// delete all the records from delegator 2
+	//keeper.RemoveDelegation(ctx, bond2to1)
+	//keeper.RemoveDelegation(ctx, bond2to2)
+	//_, found = keeper.GetDelegation(ctx, addrDels[1], addrVals[0])
+	//require.False(t, found)
+	//_, found = keeper.GetDelegation(ctx, addrDels[1], addrVals[1])
+	//require.False(t, found)
+	//resBonds = keeper.GetDelegatorDelegations(ctx, addrDels[1], 5)
+	//require.Equal(t, 0, len(resBonds))
 }

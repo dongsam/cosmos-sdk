@@ -65,6 +65,7 @@ func MakeTestCodec() *codec.Codec {
 	cdc.RegisterConcrete(types.MsgEditValidator{}, "test/staking/EditValidator", nil)
 	cdc.RegisterConcrete(types.MsgUndelegate{}, "test/staking/Undelegate", nil)
 	cdc.RegisterConcrete(types.MsgBeginRedelegate{}, "test/staking/BeginRedelegate", nil)
+	cdc.RegisterConcrete(types.MsgChangeDelegator{}, "test/staking/MsgChangeDelegator", nil)
 
 	// Register AppAccount
 	cdc.RegisterInterface((*auth.Account)(nil), nil)

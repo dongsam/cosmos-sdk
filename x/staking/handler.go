@@ -1,6 +1,7 @@
 package staking
 
 import (
+	"fmt"
 	"time"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -27,6 +28,9 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 			return handleMsgBeginRedelegate(ctx, msg, k)
 		case types.MsgUndelegate:
 			return handleMsgUndelegate(ctx, msg, k)
+		case types.MsgChangeDelegator:
+			fmt.Println("routing MsgChangeDelegator")
+			return handleMsgChangeDelegator(ctx, msg, k)
 		default:
 			return sdk.ErrTxDecode("invalid message parse in staking module").Result()
 		}
@@ -227,7 +231,7 @@ func handleMsgDelegate(ctx sdk.Context, msg types.MsgDelegate, k keeper.Keeper) 
 		Tags: tags,
 	}
 }
-
+// TODO: change Delegator
 func handleMsgUndelegate(ctx sdk.Context, msg types.MsgUndelegate, k keeper.Keeper) sdk.Result {
 	shares, err := k.ValidateUnbondAmount(
 		ctx, msg.DelegatorAddress, msg.ValidatorAddress, msg.Amount.Amount,
@@ -251,6 +255,23 @@ func handleMsgUndelegate(ctx sdk.Context, msg types.MsgUndelegate, k keeper.Keep
 	return sdk.Result{Data: finishTime, Tags: tags}
 }
 
+func handleMsgChangeDelegator(ctx sdk.Context, msg types.MsgChangeDelegator, k keeper.Keeper) sdk.Result {
+	err := k.ChangeDelegator(ctx, msg.DelegatorSrcAddress, msg.DelegatorDstAddress, msg.ValidatorAddress)
+	if err != nil {
+		return err.Result()
+	}
+
+	tags := sdk.NewTags(
+		//tags.Delegator, msg.DelegatorSrcAddress.String(),
+		tags.SrcDelegator, msg.DelegatorSrcAddress.String(),
+		tags.DstDelegator, msg.DelegatorDstAddress.String(),
+	)
+	//
+	return sdk.Result{Tags: tags}
+}
+
+
+// TODO: change Delegator
 func handleMsgBeginRedelegate(ctx sdk.Context, msg types.MsgBeginRedelegate, k keeper.Keeper) sdk.Result {
 	shares, err := k.ValidateUnbondAmount(
 		ctx, msg.DelegatorAddress, msg.ValidatorSrcAddress, msg.Amount.Amount,

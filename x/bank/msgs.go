@@ -14,6 +14,20 @@ type MsgSend struct {
 	Amount      sdk.Coins      `json:"amount"`
 }
 
+//var variablesMapAddr map[string]sdk.AccAddress
+////var VariablesMapAccAddress = make(map[string]sdk.AccAddress)
+////VariablesMapAccAddress["buyer"] = sdk.AccAddress(crypto.AddressHash([]byte("buyer")))
+//
+//func SetVariableAddr(key string, addr sdk.AccAddress) {
+//	variablesMapAddr[key] = addr
+//}
+//
+//func GetVariableAddr(key string) sdk.AccAddress {
+//	//return sdk.AccAddress(crypto.AddressHash([]byte("testKey")))
+//	SetVariableAddr("buyer", sdk.AccAddress(crypto.AddressHash([]byte("buyer"))))
+//	return variablesMapAddr[key]
+//}
+
 var _ sdk.Msg = MsgSend{}
 
 // NewMsgSend - construct arbitrary multi-in, multi-out send msg.

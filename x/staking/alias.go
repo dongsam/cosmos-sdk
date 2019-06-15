@@ -96,6 +96,7 @@ var (
 	NewMsgEditValidator   = types.NewMsgEditValidator
 	NewMsgDelegate        = types.NewMsgDelegate
 	NewMsgUndelegate      = types.NewMsgUndelegate
+	NewMsgChangeDelegator = types.NewMsgChangeDelegator
 	NewMsgBeginRedelegate = types.NewMsgBeginRedelegate
 
 	NewQuerier               = querier.NewQuerier

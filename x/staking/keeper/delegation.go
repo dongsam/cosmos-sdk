@@ -72,7 +72,7 @@ func (k Keeper) GetDelegatorDelegations(ctx sdk.Context, delegator sdk.AccAddres
 	}
 	return delegations[:i] // trim if the array length < maxRetrieve
 }
-
+// TODO: change delegator
 // set a delegation
 func (k Keeper) SetDelegation(ctx sdk.Context, delegation types.Delegation) {
 	store := ctx.KVStore(k.storeKey)
@@ -545,6 +545,41 @@ func (k Keeper) unbond(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValA
 	return amount, nil
 }
 
+func (k Keeper) ChangeDelegator(ctx sdk.Context, srcDelAddr sdk.AccAddress, dstDelAddr sdk.AccAddress, valAddr sdk.ValAddress) (err sdk.Error) {
+	// check if a delegation object exists in the store
+	fmt.Println(srcDelAddr, dstDelAddr, valAddr)
+	delegation, found := k.GetDelegation(ctx, srcDelAddr, valAddr)
+	if !found {
+		return types.ErrNoDelegatorForAddress(k.Codespace())
+	}
+
+	// TODO: check is it not unbonding, redelegation period or not
+
+	// call the before-delegation-modified hook
+	k.BeforeDelegationSharesModified(ctx, srcDelAddr, valAddr)
+	fmt.Println("after hook BeforeDelegationSharesModified")
+	// if already exist dst pair
+	dstDelegation, found := k.GetDelegation(ctx, dstDelAddr, valAddr)
+	if !found {
+		dstDelegation = types.NewDelegation(dstDelAddr, valAddr, delegation.Shares)
+	} else {
+		// call the before-delegation-modified hook
+		k.BeforeDelegationSharesModified(ctx, dstDelAddr, valAddr)
+		dstDelegation.Shares = dstDelegation.Shares.Add(delegation.Shares)
+	}
+
+	k.RemoveDelegation(ctx, delegation)
+	checkDel, found := k.GetDelegation(ctx, srcDelAddr, valAddr)
+	if found {
+		fmt.Println(checkDel)
+	}
+	k.SetDelegation(ctx, dstDelegation)
+	// call the after delegation modification hook
+	k.AfterDelegationModified(ctx, dstDelegation.DelegatorAddress, dstDelegation.ValidatorAddress)
+
+	return nil
+}
+
 // getBeginInfo returns the completion time and height of a redelegation, along
 // with a boolean signaling if the redelegation is complete based on the source
 // validator.
@@ -716,7 +751,7 @@ func (k Keeper) CompleteRedelegation(ctx sdk.Context, delAddr sdk.AccAddress,
 
 	return nil
 }
-
+// TODO: change Delegator
 // ValidateUnbondAmount validates that a given unbond or redelegation amount is
 // valied based on upon the converted shares. If the amount is valid, the total
 // amount of respective shares is returned, otherwise an error is returned.

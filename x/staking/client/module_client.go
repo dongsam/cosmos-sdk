@@ -56,6 +56,7 @@ func (mc ModuleClient) GetTxCmd() *cobra.Command {
 		cli.GetCmdEditValidator(mc.cdc),
 		cli.GetCmdDelegate(mc.cdc),
 		cli.GetCmdRedelegate(mc.storeKey, mc.cdc),
+		cli.GetCmdChangedelegator(mc.storeKey, mc.cdc),
 		cli.GetCmdUnbond(mc.storeKey, mc.cdc),
 	)...)
 

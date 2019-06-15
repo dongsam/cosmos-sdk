@@ -78,7 +78,7 @@ func (k Keeper) Slash(ctx sdk.Context, consAddr sdk.ConsAddress, infractionHeigh
 			infractionHeight))
 
 	case infractionHeight < ctx.BlockHeight():
-
+		// TODO: change delegator, slashing logic
 		// Iterate through unbonding delegations from slashed validator
 		unbondingDelegations := k.GetUnbondingDelegationsFromValidator(ctx, operatorAddress)
 		for _, unbondingDelegation := range unbondingDelegations {

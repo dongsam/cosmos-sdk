@@ -340,3 +340,74 @@ func (msg MsgUndelegate) ValidateBasic() sdk.Error {
 	}
 	return nil
 }
+
+
+type MsgChangeDelegator struct {
+	DelegatorSrcAddress sdk.AccAddress   	`json:"delegator_src_address"`
+	DelegatorDstAddress sdk.AccAddress	    `json:"delegator_dst_address"`
+	ValidatorAddress sdk.ValAddress 	    `json:"validator_address"`
+	//Amount           sdk.Coin       `json:"amount"`
+}
+
+type msgChangeDelegatorJSON struct {
+	DelegatorSrcAddress  sdk.AccAddress `json:"delegator_src_address"`
+	DelegatorDstAddress  sdk.AccAddress `json:"delegator_dst_address"`
+	ValidatorAddress  sdk.ValAddress `json:"validator_address"`
+}
+
+func NewMsgChangeDelegator(srcDelAddr sdk.AccAddress, dstDelAddr sdk.AccAddress, valAddr sdk.ValAddress) MsgChangeDelegator {
+	return MsgChangeDelegator{
+		DelegatorSrcAddress: srcDelAddr,
+		DelegatorDstAddress: dstDelAddr,
+		ValidatorAddress: valAddr,
+		//Amount:           amount,
+	}
+}
+//nolint
+func (msg MsgChangeDelegator) Route() string                { return RouterKey }
+func (msg MsgChangeDelegator) Type() string                 { return "change_delegator" }
+func (msg MsgChangeDelegator) GetSigners() []sdk.AccAddress { return []sdk.AccAddress{msg.DelegatorSrcAddress} }
+
+// get the bytes for the message signer to sign on
+func (msg MsgChangeDelegator) GetSignBytes() []byte {
+	bz := MsgCdc.MustMarshalJSON(msg)
+	return sdk.MustSortJSON(bz)
+}
+
+// quick validity check
+func (msg MsgChangeDelegator) ValidateBasic() sdk.Error {
+	if msg.DelegatorSrcAddress.Empty() {
+		return ErrNilDelegatorAddr(DefaultCodespace)
+	}
+	if msg.DelegatorDstAddress.Empty() {
+		return ErrNilDelegatorAddr(DefaultCodespace)
+	}
+	if msg.ValidatorAddress.Empty() {
+		return ErrNilValidatorAddr(DefaultCodespace)
+	}
+	return nil
+}
+
+// MarshalJSON implements the json.Marshaler interface to provide custom JSON
+// serialization of the MsgCreateValidator type.
+func (msg MsgChangeDelegator) MarshalJSON() ([]byte, error) {
+	return json.Marshal(msgChangeDelegatorJSON{
+		DelegatorSrcAddress:    msg.DelegatorSrcAddress,
+		DelegatorDstAddress:    msg.DelegatorDstAddress,
+		ValidatorAddress:  		msg.ValidatorAddress,
+	})
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface to provide custom
+// JSON deserialization of the MsgCreateValidator type.
+func (msg *MsgChangeDelegator) UnmarshalJSON(bz []byte) error {
+	var msgCreateValJSON msgChangeDelegatorJSON
+	if err := json.Unmarshal(bz, &msgCreateValJSON); err != nil {
+		return err
+	}
+
+	msg.DelegatorSrcAddress = msgCreateValJSON.DelegatorSrcAddress
+	msg.DelegatorDstAddress = msgCreateValJSON.DelegatorDstAddress
+	msg.ValidatorAddress = msgCreateValJSON.ValidatorAddress
+	return nil
+}

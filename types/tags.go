@@ -74,6 +74,8 @@ var (
 	TagSrcValidator = "source-validator"
 	TagDstValidator = "destination-validator"
 	TagDelegator    = "delegator"
+	TagSrcDelegator = "source-delegator"
+	TagDstDelegator = "destination-delegator"
 )
 
 // A KVPair where the Key and Value are both strings, rather than []byte
