@@ -566,7 +566,7 @@ func (k Keeper) ChangeDelegator(ctx sdk.Context, srcDelAddr sdk.AccAddress, dstD
 
 	// call the before-delegation-modified hook
 	k.BeforeDelegationSharesModified(ctx, srcDelAddr, valAddr)
-	fmt.Println("after hook BeforeDelegationSharesModified")
+
 	// if already exist dst pair
 	dstDelegation, found := k.GetDelegation(ctx, dstDelAddr, valAddr)
 	if !found {
@@ -580,12 +580,16 @@ func (k Keeper) ChangeDelegator(ctx sdk.Context, srcDelAddr sdk.AccAddress, dstD
 	if delegation.Shares.GT(amtDec) {
 		delegation.Shares = delegation.Shares.Sub(amtDec)
 		k.SetDelegation(ctx, delegation)
-	} else{
+		k.AfterDelegationModified(ctx, delegation.DelegatorAddress, delegation.ValidatorAddress)
+	} else if delegation.Shares.Equal(amtDec) {
 		k.RemoveDelegation(ctx, delegation)
-		checkDel, found := k.GetDelegation(ctx, srcDelAddr, valAddr)
-		if found {
-			fmt.Println(checkDel)
-		}
+		//checkDel, found := k.GetDelegation(ctx, srcDelAddr, valAddr)
+		//if found {
+		//	types.ErrBadSharesAmount()
+		//	fmt.Println(checkDel)
+		//}
+	} else {
+		return types.ErrNotEnoughDelegationShares(k.Codespace(), delegation.Shares.String())
 	}
 
 	k.SetDelegation(ctx, dstDelegation)
