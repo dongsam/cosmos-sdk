@@ -1,5 +1,6 @@
-# Cosmos SDK
+# Cosmos SDK + dDex of B-Harvest
 ![banner](docs/cosmos-sdk-image.png)
+![banner2](docs/hackatom_title.png)
 
 [![version](https://img.shields.io/github/tag/cosmos/cosmos-sdk.svg)](https://github.com/cosmos/cosmos-sdk/releases/latest)
 [![CircleCI](https://circleci.com/gh/cosmos/cosmos-sdk/tree/master.svg?style=shield)](https://circleci.com/gh/cosmos/cosmos-sdk/tree/master)
@@ -11,6 +12,22 @@
 [![API Reference](https://godoc.org/github.com/cosmos/cosmos-sdk?status.svg
 )](https://godoc.org/github.com/cosmos/cosmos-sdk)
 [![riot.im](https://img.shields.io/badge/riot.im-JOIN%20CHAT-green.svg)](https://riot.im/app/#/room/#cosmos-sdk:matrix.org)
+
+
+## [Presentation link](https://docs.google.com/presentation/d/1bT5h70Hxq68gZZwBsKGT_YqBYoLReZc4XCwBSzZEQWo/edit?usp=sharing)
+
+
+## ChangeDelegator
+
+![changeDelegatorChart](docs/changeDelegator.png)
+
+## Web
+
+- [Demo, TBD]()
+- [Github, TBD]()
+
+
+# Cosmos SDK
 
 The Cosmos-SDK is a framework for building blockchain applications in Golang.
 It is being used to build `Gaia`, the first implementation of the Cosmos Hub.
