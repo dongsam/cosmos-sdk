@@ -14,17 +14,19 @@
 [![riot.im](https://img.shields.io/badge/riot.im-JOIN%20CHAT-green.svg)](https://riot.im/app/#/room/#cosmos-sdk:matrix.org)
 
 
-## [Presentation link](https://docs.google.com/presentation/d/1bT5h70Hxq68gZZwBsKGT_YqBYoLReZc4XCwBSzZEQWo/edit?usp=sharing)
-
-
 ## ChangeDelegator
 
 ![changeDelegatorChart](docs/changeDelegator.png)
 
+## Presentation
+
+- [Google Slide Link](https://docs.google.com/presentation/d/1bT5h70Hxq68gZZwBsKGT_YqBYoLReZc4XCwBSzZEQWo/edit?usp=sharing)
+
 ## Web
 
-- [Demo, TBD]()
-- [Github, TBD]()
+- [dDeX_PoC Github](https://github.com/b-harvest/dDeX_PoC)
+- [Demo Video](https://youtu.be/s3W2Yj88-6o)
+- [Web Demo](http://3.121.244.213:5000) (temporary)
 
 
 # Cosmos SDK

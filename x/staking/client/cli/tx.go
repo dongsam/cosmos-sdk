@@ -192,7 +192,7 @@ func GetCmdChangeDelegator(storeName string, cdc *codec.Codec) *cobra.Command {
 		Args:  cobra.ExactArgs(3),
 		Long: strings.TrimSpace(`change delegator of delegation, TBD more detail:
 
-$ gaiacli tx staking change-delegator cosmos12a5v5w6a7g53ra4z8m4f6d5u7mverdhf9zwz7r cosmosvaloper1l2rsakp388kuv9k8qzq6lrm9taddae7fpx59wm --from mykey
+$ gaiacli tx staking change-delegator cosmos12a5v5w6a7g53ra4z8m4f6d5u7mverdhf9zwz7r cosmosvaloper1l2rsakp388kuv9k8qzq6lrm9taddae7fpx59wm 100000uatom --from mykey
 `),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			txBldr := authtxb.NewTxBuilderFromCLI().WithTxEncoder(auth.DefaultTxEncoder(cdc))

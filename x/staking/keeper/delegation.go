@@ -545,9 +545,9 @@ func (k Keeper) unbond(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValA
 	return amount, nil
 }
 
-func (k Keeper) ChangeDelegator(ctx sdk.Context, srcDelAddr sdk.AccAddress, dstDelAddr sdk.AccAddress, valAddr sdk.ValAddress, amount sdk.Coin) (err sdk.Error) {
+func (k Keeper) ChangeDelegator(ctx sdk.Context, srcDelAddr sdk.AccAddress, dstDelAddr sdk.AccAddress,
+	valAddr sdk.ValAddress, amount sdk.Coin) (err sdk.Error) {
 	// check if a delegation object exists in the store
-	fmt.Println(srcDelAddr, dstDelAddr, valAddr)
 	delegation, found := k.GetDelegation(ctx, srcDelAddr, valAddr)
 	if !found {
 		return types.ErrNoDelegatorForAddress(k.Codespace())
@@ -583,11 +583,6 @@ func (k Keeper) ChangeDelegator(ctx sdk.Context, srcDelAddr sdk.AccAddress, dstD
 		k.AfterDelegationModified(ctx, delegation.DelegatorAddress, delegation.ValidatorAddress)
 	} else if delegation.Shares.Equal(amtDec) {
 		k.RemoveDelegation(ctx, delegation)
-		//checkDel, found := k.GetDelegation(ctx, srcDelAddr, valAddr)
-		//if found {
-		//	types.ErrBadSharesAmount()
-		//	fmt.Println(checkDel)
-		//}
 	} else {
 		return types.ErrNotEnoughDelegationShares(k.Codespace(), delegation.Shares.String())
 	}
