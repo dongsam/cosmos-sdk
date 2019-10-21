@@ -3,6 +3,7 @@ package keeper
 import (
 	"bytes"
 	"fmt"
+	"github.com/tendermint/tendermint/crypto"
 	"sort"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -295,4 +296,27 @@ func sortNoLongerBonded(last validatorsByAddr) [][]byte {
 		return bytes.Compare(noLongerBonded[i], noLongerBonded[j]) == -1
 	})
 	return noLongerBonded
+}
+
+func (k Keeper) ConsPubKeyRotation(ctx sdk.Context, newPubKey crypto.PubKey, address sdk.ValAddress) {
+	// first retrieve the old validator record
+	validator, found := k.GetValidator(ctx, address)
+	if !found {
+		return
+	}
+
+	store := ctx.KVStore(k.storeKey)
+
+	// duplicated consKey check
+	opAddr := store.Get(types.GetValidatorByConsAddrKey(sdk.ConsAddress(validator.ConsPubKey.Address())))
+	if opAddr != nil {
+		return
+	}
+
+	validator.ConsPubKey = newPubKey
+	k.SetValidator(ctx, validator)
+
+	store.Delete(types.GetValidatorByConsAddrKey(sdk.ConsAddress(validator.ConsPubKey.Address())))
+	k.SetValidatorByConsAddr(ctx, validator)
+	//k.SetValidatorByPowerIndex(), only using power and operAddr
 }

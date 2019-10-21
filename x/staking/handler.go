@@ -24,6 +24,9 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 		case types.MsgEditValidator:
 			return handleMsgEditValidator(ctx, msg, k)
 
+		case types.MsgConsPubKeyRotation:
+			return handleMsgConsPubKeyRotation(ctx, msg, k)
+
 		case types.MsgDelegate:
 			return handleMsgDelegate(ctx, msg, k)
 
@@ -222,6 +225,59 @@ func handleMsgEditValidator(ctx sdk.Context, msg types.MsgEditValidator, k keepe
 
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }
+
+// TODO: add handleMsgValidatorKeyRotation
+
+func handleMsgConsPubKeyRotation(ctx sdk.Context, msg types.MsgConsPubKeyRotation, k keeper.Keeper) sdk.Result {
+	// check to see if the validator registered
+	if _, found := k.GetValidator(ctx, msg.ValidatorAddress); !found {
+		return ErrNoValidatorFound(k.Codespace()).Result()
+	}
+
+	// check to see if the newpubkey or sender has been registered before
+	if _, found := k.GetValidatorByConsAddr(ctx, sdk.GetConsAddress(msg.NewPubKey)); found {
+		return ErrValidatorPubKeyExists(k.Codespace()).Result()
+	}
+
+	if ctx.ConsensusParams() != nil {
+		tmPubKey := tmtypes.TM2PB.PubKey(msg.NewPubKey)
+		if !common.StringInSlice(tmPubKey.Type, ctx.ConsensusParams().Validator.PubKeyTypes) {
+			return ErrValidatorPubKeyTypeNotSupported(k.Codespace(),
+				tmPubKey.Type,
+				ctx.ConsensusParams().Validator.PubKeyTypes).Result()
+		}
+	}
+
+	k.ConsPubKeyRotation(ctx, msg.NewPubKey, msg.ValidatorAddress)
+
+	//validator := NewValidator(msg.ValidatorAddress, msg.NewPubKey, msg.Description)
+	//
+	//k.SetValidator(ctx, validator)
+	//k.SetValidatorByConsAddr(ctx, validator)
+	//k.SetNewValidatorByPowerIndex(ctx, validator)
+
+
+	// TODO: add events, hooks for MsgConsPubKeyRotation
+	// call the after-creation hook
+	//k.AfterValidatorCreated(ctx, validator.OperatorAddress)
+
+
+	//ctx.EventManager().EmitEvents(sdk.Events{
+	//	sdk.NewEvent(
+	//		types.EventTypeCreateValidator,
+	//		sdk.NewAttribute(types.AttributeKeyValidator, msg.ValidatorAddress.String()),
+	//		sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Value.Amount.String()),
+	//	),
+	//	sdk.NewEvent(
+	//		sdk.EventTypeMessage,
+	//		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+	//		sdk.NewAttribute(sdk.AttributeKeySender, msg.DelegatorAddress.String()),
+	//	),
+	//})
+
+	return sdk.Result{Events: ctx.EventManager().Events()}
+}
+
 
 func handleMsgDelegate(ctx sdk.Context, msg types.MsgDelegate, k keeper.Keeper) sdk.Result {
 	validator, found := k.GetValidator(ctx, msg.ValidatorAddress)

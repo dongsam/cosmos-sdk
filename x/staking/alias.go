@@ -160,6 +160,7 @@ var (
 	GetREDsToValDstIndexKey            = types.GetREDsToValDstIndexKey
 	GetREDsByDelToValDstIndexKey       = types.GetREDsByDelToValDstIndexKey
 	NewMsgCreateValidator              = types.NewMsgCreateValidator
+	NewMsgConsPubKeyRotation           = types.NewMsgConsPubKeyRotation
 	NewMsgEditValidator                = types.NewMsgEditValidator
 	NewMsgDelegate                     = types.NewMsgDelegate
 	NewMsgBeginRedelegate              = types.NewMsgBeginRedelegate
@@ -226,6 +227,7 @@ type (
 	LastValidatorPower        = types.LastValidatorPower
 	MultiStakingHooks         = types.MultiStakingHooks
 	MsgCreateValidator        = types.MsgCreateValidator
+	MsgConsPubKeyRotation     = types.MsgConsPubKeyRotation
 	MsgEditValidator          = types.MsgEditValidator
 	MsgDelegate               = types.MsgDelegate
 	MsgBeginRedelegate        = types.MsgBeginRedelegate
