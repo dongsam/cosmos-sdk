@@ -318,6 +318,6 @@ func (k Keeper) ConsPubKeyRotation(ctx sdk.Context, newPubKey crypto.PubKey, add
 	k.SetValidator(ctx, validator)
 	k.SetValidatorByConsAddr(ctx, validator)
 	//k.SetValidatorByPowerIndex(), only using power and OperatorAddress
-
+	fmt.Println(newPubKey, validator)
 	return nil
 }

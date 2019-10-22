@@ -230,9 +230,12 @@ func handleMsgEditValidator(ctx sdk.Context, msg types.MsgEditValidator, k keepe
 
 func handleMsgConsPubKeyRotation(ctx sdk.Context, msg types.MsgConsPubKeyRotation, k keeper.Keeper) sdk.Result {
 	// check to see if the validator registered
-	if _, found := k.GetValidator(ctx, msg.ValidatorAddress); !found {
+	validator, found := k.GetValidator(ctx, msg.ValidatorAddress)
+	if !found {
 		return ErrNoValidatorFound(k.Codespace()).Result()
 	}
+
+	oldPubKey := validator.ConsPubKey
 
 	// check to see if the newpubkey or sender has been registered before
 	if _, found := k.GetValidatorByConsAddr(ctx, sdk.GetConsAddress(msg.NewPubKey)); found {
@@ -263,19 +266,21 @@ func handleMsgConsPubKeyRotation(ctx sdk.Context, msg types.MsgConsPubKeyRotatio
 	// call the after-creation hook
 	//k.AfterValidatorCreated(ctx, validator.OperatorAddress)
 
+	validator, _ = k.GetValidator(ctx, msg.ValidatorAddress)
+	if oldPubKey.Equals(validator.ConsPubKey){
+		return types.ErrValidatorPubKeyRotationFailed(k.Codespace()).Result()
+	}
 
-	//ctx.EventManager().EmitEvents(sdk.Events{
-	//	sdk.NewEvent(
-	//		types.EventTypeCreateValidator,
-	//		sdk.NewAttribute(types.AttributeKeyValidator, msg.ValidatorAddress.String()),
-	//		sdk.NewAttribute(sdk.AttributeKeyAmount, msg.Value.Amount.String()),
-	//	),
-	//	sdk.NewEvent(
-	//		sdk.EventTypeMessage,
-	//		sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
-	//		sdk.NewAttribute(sdk.AttributeKeySender, msg.DelegatorAddress.String()),
-	//	),
-	//})
+	fmt.Println(validator, msg)
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeConsPubKeyRotation,
+			sdk.NewAttribute(types.AttributeKeyValidator, msg.ValidatorAddress.String()),
+			sdk.NewAttribute("old_pubkey", oldPubKey.Address().String()),
+			sdk.NewAttribute("new_pubkey", msg.NewPubKey.Address().String()),
+		),
+	})
 
 	return sdk.Result{Events: ctx.EventManager().Events()}
 }

@@ -6,6 +6,7 @@ const (
 	EventTypeCompleteRedelegation = "complete_redelegation"
 	EventTypeCreateValidator      = "create_validator"
 	EventTypeEditValidator        = "edit_validator"
+	EventTypeConsPubKeyRotation   = "conspubkey_rotation"
 	EventTypeDelegate             = "delegate"
 	EventTypeUnbond               = "unbond"
 	EventTypeRedelegate           = "redelegate"

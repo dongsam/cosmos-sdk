@@ -260,7 +260,7 @@ type MsgConsPubKeyRotation struct {
 
 type MsgConsPubKeyRotationJSON struct {
 	ValidatorAddress  sdk.ValAddress  `json:"validator_address" yaml:"validator_address"`
-	PubKey            string          `json:"pubkey" yaml:"pubkey"`
+	NewPubKey         string          `json:"new_pubkey" yaml:"new_pubkey"`
 }
 
 func NewMsgConsPubKeyRotation(valAddr sdk.ValAddress, newPubKey crypto.PubKey) MsgConsPubKeyRotation {
@@ -282,7 +282,7 @@ func (msg MsgConsPubKeyRotation) GetSigners() []sdk.AccAddress {
 func (msg MsgConsPubKeyRotation) MarshalJSON() ([]byte, error) {
 	return json.Marshal(MsgConsPubKeyRotationJSON{
 		ValidatorAddress:  msg.ValidatorAddress,
-		PubKey:            sdk.MustBech32ifyConsPub(msg.NewPubKey),
+		NewPubKey:         sdk.MustBech32ifyConsPub(msg.NewPubKey),
 	})
 }
 
@@ -296,7 +296,7 @@ func (msg *MsgConsPubKeyRotation) UnmarshalJSON(bz []byte) error {
 
 	msg.ValidatorAddress = msgConsPubKeyRotationJSON.ValidatorAddress
 	var err error
-	msg.NewPubKey, err = sdk.GetConsPubKeyBech32(msgConsPubKeyRotationJSON.PubKey)
+	msg.NewPubKey, err = sdk.GetConsPubKeyBech32(msgConsPubKeyRotationJSON.NewPubKey)
 	if err != nil {
 		return err
 	}
