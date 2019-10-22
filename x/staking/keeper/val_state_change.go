@@ -298,11 +298,11 @@ func sortNoLongerBonded(last validatorsByAddr) [][]byte {
 	return noLongerBonded
 }
 
-func (k Keeper) ConsPubKeyRotation(ctx sdk.Context, newPubKey crypto.PubKey, address sdk.ValAddress) {
+func (k Keeper) ConsPubKeyRotation(ctx sdk.Context, newPubKey crypto.PubKey, address sdk.ValAddress) sdk.Error {
 	// first retrieve the old validator record
 	validator, found := k.GetValidator(ctx, address)
 	if !found {
-		return
+		return types.ErrNoValidatorFound(k.Codespace())
 	}
 
 	store := ctx.KVStore(k.storeKey)
@@ -310,13 +310,14 @@ func (k Keeper) ConsPubKeyRotation(ctx sdk.Context, newPubKey crypto.PubKey, add
 	// duplicated consKey check
 	opAddr := store.Get(types.GetValidatorByConsAddrKey(sdk.ConsAddress(validator.ConsPubKey.Address())))
 	if opAddr != nil {
-		return
+		return types.ErrValidatorPubKeyExists(k.Codespace())
 	}
 
+	store.Delete(types.GetValidatorByConsAddrKey(sdk.ConsAddress(validator.ConsPubKey.Address())))
 	validator.ConsPubKey = newPubKey
 	k.SetValidator(ctx, validator)
-
-	store.Delete(types.GetValidatorByConsAddrKey(sdk.ConsAddress(validator.ConsPubKey.Address())))
 	k.SetValidatorByConsAddr(ctx, validator)
-	//k.SetValidatorByPowerIndex(), only using power and operAddr
+	//k.SetValidatorByPowerIndex(), only using power and OperatorAddress
+
+	return nil
 }

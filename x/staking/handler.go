@@ -248,8 +248,10 @@ func handleMsgConsPubKeyRotation(ctx sdk.Context, msg types.MsgConsPubKeyRotatio
 		}
 	}
 
-	k.ConsPubKeyRotation(ctx, msg.NewPubKey, msg.ValidatorAddress)
-
+	err := k.ConsPubKeyRotation(ctx, msg.NewPubKey, msg.ValidatorAddress)
+	if err != nil {
+		return err.Result()
+	}
 	//validator := NewValidator(msg.ValidatorAddress, msg.NewPubKey, msg.Description)
 	//
 	//k.SetValidator(ctx, validator)
