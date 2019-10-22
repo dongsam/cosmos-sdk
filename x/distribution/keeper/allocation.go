@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bytes"
 	"fmt"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -85,6 +86,19 @@ func (k Keeper) AllocateTokens(
 	// TODO consider parallelizing later, ref https://github.com/cosmos/cosmos-sdk/pull/3099#discussion_r246276376
 	for _, vote := range previousVotes {
 		validator := k.stakingKeeper.ValidatorByConsAddr(ctx, vote.Validator.Address)
+
+		// TODO: add keyRotation case, when validator is nil, need to test
+		if validator == nil {
+			fmt.Println("key rotation detection 1", vote, k.stakingKeeper.RotatedHistoryList(ctx))
+			for _, history := range k.stakingKeeper.RotatedHistoryList(ctx){
+				fmt.Println("key rotation detection 2", history)
+				if bytes.Equal(history.GetOldConsPubKey().Bytes(), vote.Validator.Address) {
+					validator = k.stakingKeeper.Validator(ctx, history.GetOperatorAddress())
+					fmt.Println("key rotation detection 3", validator)
+				}
+			}
+
+		}
 
 		// TODO consider microslashing for missing votes.
 		// ref https://github.com/cosmos/cosmos-sdk/issues/2525#issuecomment-430838701

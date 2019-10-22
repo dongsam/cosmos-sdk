@@ -444,3 +444,38 @@ func (k Keeper) UnbondAllMatureValidatorQueue(ctx sdk.Context) {
 		store.Delete(validatorTimesliceIterator.Key())
 	}
 }
+
+// KeyRotationHistory
+func (k Keeper) SetConsPubKeyRotationHistory(ctx sdk.Context, history types.ConsPubKeyRotationHistory) {
+	store := ctx.KVStore(k.storeKey)
+	bz := types.MustMarshalConsPubKeyRotationHistory(k.cdc, history)
+	store.Set(types.GetConsPubKeyRotationHistoryKey(sdk.ConsAddress(history.NewConsPubKey.Address())), bz)
+}
+
+func (k Keeper) GetConsPubKeyRotationHistory(ctx sdk.Context, consAddr sdk.ConsAddress) (history types.ConsPubKeyRotationHistory, found bool)  {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.GetConsPubKeyRotationHistoryKey(consAddr))
+	if bz == nil {
+		return types.ConsPubKeyRotationHistory{}, false
+	}
+	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &history)
+	return history, true
+}
+
+func (k Keeper) ConsPubKeyRotationHistoryIterator(ctx sdk.Context) (iterator sdk.Iterator) {
+	store := ctx.KVStore(k.storeKey)
+	iterator = sdk.KVStoreReversePrefixIterator(store, types.ConsPubKeyRotationHistoryKey)
+	return iterator
+}
+
+func (k Keeper) GetConsPubKeyRotationHistoryListToProcess(ctx sdk.Context) (historyList []types.ConsPubKeyRotationHistory) {
+	iterator := k.ConsPubKeyRotationHistoryIterator(ctx)
+	for ; iterator.Valid(); iterator.Next() {
+		var history types.ConsPubKeyRotationHistory
+		k.cdc.MustUnmarshalBinaryLengthPrefixed(iterator.Value(), &history)
+		if history.RotatedHeight == ctx.BlockHeight() {
+			historyList = append(historyList, history)
+		}
+	}
+	return historyList
+}

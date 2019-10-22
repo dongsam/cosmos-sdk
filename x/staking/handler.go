@@ -271,7 +271,7 @@ func handleMsgConsPubKeyRotation(ctx sdk.Context, msg types.MsgConsPubKeyRotatio
 		return types.ErrValidatorPubKeyRotationFailed(k.Codespace()).Result()
 	}
 
-	fmt.Println(validator, msg)
+	fmt.Println(validator, msg) // tmp, for debugging
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(

@@ -43,6 +43,8 @@ type StakingKeeper interface {
 	GetLastValidatorPower(ctx sdk.Context, valAddr sdk.ValAddress) int64
 
 	GetAllSDKDelegations(ctx sdk.Context) []staking.Delegation
+
+	RotatedHistoryList(ctx sdk.Context) []stakingexported.ConsPubKeyRotationHistoryI
 }
 
 // StakingHooks event hooks for staking validator object (noalias)

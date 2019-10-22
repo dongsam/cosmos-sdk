@@ -1,6 +1,7 @@
 package staking
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -407,6 +408,59 @@ func TestEditValidatorIncreaseMinSelfDelegationBeyondCurrentBond(t *testing.T) {
 	got = handleMsgEditValidator(ctx, msgEditValidator, keeper)
 	require.False(t, got.IsOK(), "should not be able to increase minSelfDelegation above current self delegation")
 }
+
+
+func TestEditValidatorKeyRotation(t *testing.T) {
+	ctx, _, keeper, _ := keep.CreateTestInput(t, false, 1000)
+
+	addr1, addr2 := sdk.ValAddress(keep.Addrs[0]), sdk.ValAddress(keep.Addrs[1])
+	pk1, pk2, pk3 := keep.PKs[0], keep.PKs[1], keep.PKs[2]
+
+	valTokens := sdk.TokensFromConsensusPower(10)
+	msgCreateValidator1 := NewTestMsgCreateValidator(addr1, pk1, valTokens)
+	got := handleMsgCreateValidator(ctx, msgCreateValidator1, keeper)
+	require.True(t, got.IsOK(), "%v", got)
+
+	updates := keeper.ApplyAndReturnValidatorSetUpdates(ctx)
+
+	validator, found := keeper.GetValidator(ctx, addr1)
+	require.True(t, found)
+	assert.Equal(t, sdk.Bonded, validator.Status)
+	assert.Equal(t, addr1, validator.OperatorAddress)
+	assert.Equal(t, pk1, validator.ConsPubKey)
+	assert.Equal(t, valTokens, validator.BondedTokens())
+	assert.Equal(t, valTokens.ToDec(), validator.DelegatorShares)
+	assert.Equal(t, Description{}, validator.Description)
+
+	fmt.Println(addr1, pk1, addr2, pk2)
+	//validatorAddr := sdk.ValAddress(keep.Addrs[0])
+
+	//initPower := int64(100)
+	//ctx, _, keeper, _ := keep.CreateTestInput(t, false, initPower)
+	_ = setInstantUnbondPeriod(keeper, ctx)
+
+	// create validator
+	msgConsPubKeyRotation := NewMsgConsPubKeyRotation(addr1, pk3)
+
+	err := msgConsPubKeyRotation.ValidateBasic()
+	fmt.Println(err)
+
+	got2 := handleMsgConsPubKeyRotation(ctx, msgConsPubKeyRotation, keeper)
+	require.True(t, got2.IsOK(), "pubkey rotation %v", got2)
+
+	// must end-block
+	updates2 := keeper.ApplyAndReturnValidatorSetUpdates(ctx)
+	require.Equal(t, 2, len(updates2))
+
+	fmt.Println(updates, updates2)
+
+	// verify the self-delegation exists
+
+	val, _ := keeper.GetValidator(ctx, addr1)
+
+	require.True(t, val.ConsPubKey.Equals(pk3))
+}
+
 
 func TestIncrementsMsgUnbond(t *testing.T) {
 	initPower := int64(1000)

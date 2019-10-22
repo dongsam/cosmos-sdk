@@ -36,6 +36,9 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 	// (see LastValidatorPowerKey).
 	last := k.getLastValidatorsByAddr(ctx)
 
+	// TODO: check Key rotation case, and add two updates for delete, new
+	// TODO: with old pubkey with 0 power, new pubkey with migrated power
+
 	// Iterate over validators, highest power to lowest.
 	iterator := sdk.KVStoreReversePrefixIterator(store, types.ValidatorsByPowerIndexKey)
 	defer iterator.Close()
@@ -131,6 +134,15 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		k.bondedTokensToNotBonded(ctx, amtFromBondedToNotBonded.Sub(amtFromNotBondedToBonded))
 	default:
 		// equal amounts of tokens; no update required
+	}
+
+	for _, history := range k.GetConsPubKeyRotationHistoryListToProcess(ctx) {
+		valAddr := sdk.ValAddress(history.OperatorAddress)
+		validator := k.mustGetValidator(ctx, valAddr)
+
+		// TODO: check already updates exist about this validator
+		updates = append(updates, validator.ABCIValidatorDeleteRotatedOldKey(history.OldConsPubKey))
+		updates = append(updates, validator.ABCIValidatorUpdate())
 	}
 
 	// set total power on lookup index if there are any updates
@@ -308,16 +320,26 @@ func (k Keeper) ConsPubKeyRotation(ctx sdk.Context, newPubKey crypto.PubKey, add
 	store := ctx.KVStore(k.storeKey)
 
 	// duplicated consKey check
-	opAddr := store.Get(types.GetValidatorByConsAddrKey(sdk.ConsAddress(validator.ConsPubKey.Address())))
+	opAddr := store.Get(types.GetValidatorByConsAddrKey(sdk.ConsAddress(newPubKey.Address())))
 	if opAddr != nil {
 		return types.ErrValidatorPubKeyExists(k.Codespace())
 	}
 
+	history := types.NewConsPubKeyRotationHistory(validator.OperatorAddress, validator.ConsPubKey, newPubKey, ctx.BlockHeight())
 	store.Delete(types.GetValidatorByConsAddrKey(sdk.ConsAddress(validator.ConsPubKey.Address())))
 	validator.ConsPubKey = newPubKey
+
 	k.SetValidator(ctx, validator)
 	k.SetValidatorByConsAddr(ctx, validator)
 	//k.SetValidatorByPowerIndex(), only using power and OperatorAddress
-	fmt.Println(newPubKey, validator)
+
+
+	_, found = k.GetConsPubKeyRotationHistory(ctx, sdk.ConsAddress(newPubKey.Address()))
+	if found {
+		return types.ErrValidatorPubKeyRotationFailed(k.Codespace()) // TODO: add specific err for had history
+	}
+	k.SetConsPubKeyRotationHistory(ctx, history)
+
+	fmt.Println(newPubKey, validator) // tmp, for debugging
 	return nil
 }

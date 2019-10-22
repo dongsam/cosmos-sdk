@@ -45,6 +45,8 @@ var (
 	UnbondingQueueKey    = []byte{0x41} // prefix for the timestamps in unbonding queue
 	RedelegationQueueKey = []byte{0x42} // prefix for the timestamps in redelegations queue
 	ValidatorQueueKey    = []byte{0x43} // prefix for the timestamps in validator queue
+
+	ConsPubKeyRotationHistoryKey    = []byte{0x51} // prefix for the timestamps in validator queue
 )
 
 // gets the key for the validator with address
@@ -120,6 +122,12 @@ func ParseValidatorPowerRankKey(key []byte) (operAddr []byte) {
 func GetValidatorQueueTimeKey(timestamp time.Time) []byte {
 	bz := sdk.FormatTimeBytes(timestamp)
 	return append(ValidatorQueueKey, bz...)
+}
+
+// gets the key for the validator with pubkey
+// VALUE: validator operator address ([]byte)
+func GetConsPubKeyRotationHistoryKey(addr sdk.ConsAddress) []byte {
+	return append(ConsPubKeyRotationHistoryKey, addr.Bytes()...)
 }
 
 //______________________________________________________________________________

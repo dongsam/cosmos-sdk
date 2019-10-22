@@ -35,3 +35,10 @@ type ValidatorI interface {
 	SharesFromTokens(amt sdk.Int) (sdk.Dec, sdk.Error)          // shares worth of delegator's bond
 	SharesFromTokensTruncated(amt sdk.Int) (sdk.Dec, sdk.Error) // truncated shares worth of delegator's bond
 }
+
+type ConsPubKeyRotationHistoryI interface {
+	GetOperatorAddress() sdk.ValAddress
+	GetOldConsPubKey() crypto.PubKey
+	GetNewConsPubKey() crypto.PubKey
+	GetRotatedHeight() int64
+}

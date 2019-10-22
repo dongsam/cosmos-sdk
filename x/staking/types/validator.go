@@ -336,6 +336,14 @@ func (v Validator) ABCIValidatorUpdateZero() abci.ValidatorUpdate {
 	}
 }
 
+// return validatorUpdate for ConsPubKeyRotation
+func (v Validator) ABCIValidatorDeleteRotatedOldKey(oldConsPubKey crypto.PubKey) abci.ValidatorUpdate {
+	return abci.ValidatorUpdate{
+		PubKey: tmtypes.TM2PB.PubKey(oldConsPubKey),
+		Power:  0,
+	}
+}
+
 // SetInitialCommission attempts to set a validator's initial commission. An
 // error is returned if the commission is invalid.
 func (v Validator) SetInitialCommission(commission Commission) (Validator, sdk.Error) {
@@ -480,6 +488,50 @@ func (v Validator) RemoveDelShares(delShares sdk.Dec) (Validator, sdk.Int) {
 	v.DelegatorShares = remainingShares
 	return v, issuedTokens
 }
+
+type ConsPubKeyRotationHistory struct {
+	OperatorAddress         sdk.ValAddress `json:"operator_address" yaml:"operator_address"`       // address of the validator's operator; bech encoded in JSON
+	OldConsPubKey              crypto.PubKey  `json:"old_consensus_pubkey" yaml:"old_consensus_pubkey"`       // the consensus public key of the validator; bech encoded in JSON
+	NewConsPubKey              crypto.PubKey  `json:"new_consensus_pubkey" yaml:"new_consensus_pubkey"`       // the consensus public key of the validator; bech encoded in JSON
+	RotatedHeight              int64  `json:"rotated_height" yaml:"rotated_height"`
+}
+
+// NewValidator - initialize a new validator
+func NewConsPubKeyRotationHistory(operator sdk.ValAddress, oldPubKey crypto.PubKey, newPubKey crypto.PubKey,
+	rotatedHeight int64) ConsPubKeyRotationHistory {
+	return ConsPubKeyRotationHistory{
+		OperatorAddress:         operator,
+		OldConsPubKey:              oldPubKey,
+		NewConsPubKey:              newPubKey,
+		RotatedHeight:         rotatedHeight,
+	}
+}
+
+// return the redelegation
+func MustMarshalConsPubKeyRotationHistory(cdc *codec.Codec, history ConsPubKeyRotationHistory) []byte {
+	return cdc.MustMarshalBinaryLengthPrefixed(history)
+}
+
+// unmarshal a redelegation from a store value
+func MustUnmarshalConsPubKeyRotationHistory(cdc *codec.Codec, value []byte) ConsPubKeyRotationHistory {
+	history, err := UnmarshalConsPubKeyRotationHistory(cdc, value)
+	if err != nil {
+		panic(err)
+	}
+	return history
+}
+
+// unmarshal a redelegation from a store value
+func UnmarshalConsPubKeyRotationHistory(cdc *codec.Codec, value []byte) (history ConsPubKeyRotationHistory, err error) {
+	err = cdc.UnmarshalBinaryLengthPrefixed(value, &history)
+	return history, err
+}
+
+// nolint - for ConsPubKeyRotationHistoryI
+func (h ConsPubKeyRotationHistory) GetOperatorAddress() sdk.ValAddress  { return h.OperatorAddress }
+func (h ConsPubKeyRotationHistory) GetOldConsPubKey() crypto.PubKey     { return h.OldConsPubKey }
+func (h ConsPubKeyRotationHistory) GetNewConsPubKey() crypto.PubKey     { return h.NewConsPubKey }
+func (h ConsPubKeyRotationHistory) GetRotatedHeight() int64             { return h.RotatedHeight }
 
 // nolint - for ValidatorI
 func (v Validator) IsJailed() bool                { return v.Jailed }

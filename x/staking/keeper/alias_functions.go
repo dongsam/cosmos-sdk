@@ -88,6 +88,15 @@ func (k Keeper) ValidatorByConsAddr(ctx sdk.Context, addr sdk.ConsAddress) expor
 	return val
 }
 
+
+func (k Keeper) RotatedHistoryList(ctx sdk.Context) (historyList []exported.ConsPubKeyRotationHistoryI) {
+	for _, history := range k.GetConsPubKeyRotationHistoryListToProcess(ctx) {
+		historyList = append(historyList, history)
+	}
+	return historyList
+}
+
+
 //_______________________________________________________________________
 // Delegation Set
 
