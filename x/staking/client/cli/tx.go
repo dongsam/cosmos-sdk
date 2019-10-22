@@ -35,6 +35,7 @@ func GetTxCmd(storeKey string, cdc *codec.Codec) *cobra.Command {
 	stakingTxCmd.AddCommand(client.PostCommands(
 		GetCmdCreateValidator(cdc),
 		GetCmdEditValidator(cdc),
+		GetCmdConsPubKeyRotation(cdc),
 		GetCmdDelegate(cdc),
 		GetCmdRedelegate(storeKey, cdc),
 		GetCmdUnbond(storeKey, cdc),
@@ -128,6 +129,35 @@ func GetCmdEditValidator(cdc *codec.Codec) *cobra.Command {
 
 	cmd.Flags().AddFlagSet(fsDescriptionEdit)
 	cmd.Flags().AddFlagSet(fsCommissionUpdate)
+
+	return cmd
+}
+
+// GetCmdConsPubKeyRotation implements the validator conspubkey rotation command handler.
+func GetCmdConsPubKeyRotation(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "conspubkey-rotation",
+		Short: "change conspubkey of an existing validator account",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			txBldr, msg, err := BuildConsPubKeyRotationMsg(cliCtx, txBldr)
+			if err != nil {
+				return err
+			}
+
+			return utils.GenerateOrBroadcastMsgs(cliCtx, txBldr, []sdk.Msg{msg})
+		},
+	}
+
+	cmd.Flags().AddFlagSet(FsPk)
+
+	cmd.Flags().String(FlagIP, "", fmt.Sprintf("The node's public IP. It takes effect only when used in combination with --%s", client.FlagGenerateOnly))
+	cmd.Flags().String(FlagNodeID, "", "The node's ID")
+
+	cmd.MarkFlagRequired(client.FlagFrom)
+	cmd.MarkFlagRequired(FlagPubKey)
 
 	return cmd
 }
@@ -371,6 +401,29 @@ func BuildCreateValidatorMsg(cliCtx context.CLIContext, txBldr auth.TxBuilder) (
 	msg := types.NewMsgCreateValidator(
 		sdk.ValAddress(valAddr), pk, amount, description, commissionRates, minSelfDelegation,
 	)
+
+	if viper.GetBool(client.FlagGenerateOnly) {
+		ip := viper.GetString(FlagIP)
+		nodeID := viper.GetString(FlagNodeID)
+		if nodeID != "" && ip != "" {
+			txBldr = txBldr.WithMemo(fmt.Sprintf("%s@%s:26656", nodeID, ip))
+		}
+	}
+
+	return txBldr, msg, nil
+}
+
+// BuildConsPubKeyRotationMsg makes a new MsgConsPubKeyRotation.
+func BuildConsPubKeyRotationMsg(cliCtx context.CLIContext, txBldr auth.TxBuilder) (auth.TxBuilder, sdk.Msg, error) {
+	valAddr := cliCtx.GetFromAddress()
+	pkStr := viper.GetString(FlagPubKey)
+
+	pk, err := sdk.GetConsPubKeyBech32(pkStr)
+	if err != nil {
+		return txBldr, nil, err
+	}
+
+	msg := types.NewMsgConsPubKeyRotation(sdk.ValAddress(valAddr), pk)
 
 	if viper.GetBool(client.FlagGenerateOnly) {
 		ip := viper.GetString(FlagIP)
