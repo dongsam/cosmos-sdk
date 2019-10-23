@@ -55,6 +55,7 @@ func (k Keeper) MigrateValidatorSigningInfo(ctx sdk.Context, oldAddress, newAddr
 	store.Set(types.GetValidatorSigningInfoKey(newAddress), bz)
 	store.Delete(types.GetValidatorSigningInfoKey(oldAddress))
 	success = true
+	k.MigrateValidatorMissedBlockBitArray(ctx, oldAddress, newAddress)
 	return
 }
 
@@ -89,6 +90,18 @@ func (k Keeper) IterateValidatorMissedBlockBitArray(ctx sdk.Context,
 			break
 		}
 	}
+}
+
+// Stored by *validator* address (not operator address)
+func (k Keeper) MigrateValidatorMissedBlockBitArray(ctx sdk.Context, oldAddress, newAddress sdk.ConsAddress) {
+	store := ctx.KVStore(k.storeKey)
+	//localMissedBlocks := []types.MissedBlock{}
+	k.IterateValidatorMissedBlockBitArray(ctx, oldAddress, func(index int64, missed bool) (stop bool) {
+		k.setValidatorMissedBlockBitArray(ctx, newAddress, index, missed)
+		store.Delete(types.GetValidatorMissedBlockBitArrayKey(oldAddress, index))
+		//localMissedBlocks = append(localMissedBlocks, types.MissedBlock{index, missed})
+		return false
+	})
 }
 
 // Stored by *validator* address (not operator address)
