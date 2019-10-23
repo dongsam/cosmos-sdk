@@ -89,13 +89,15 @@ func (k Keeper) AllocateTokens(
 
 		// TODO: add keyRotation case, when validator is nil, need to test
 		if validator == nil {
-			fmt.Println("key rotation detection 1", vote, k.stakingKeeper.RotatedHistoryList(ctx))
-			for _, history := range k.stakingKeeper.RotatedHistoryList(ctx){
+			fmt.Println("key rotation detection 1", ctx.BlockHeight(), vote, k.stakingKeeper.RotatedHistoryList(ctx, 5))
+			for _, history := range k.stakingKeeper.RotatedHistoryList(ctx, 5){
 				fmt.Println("key rotation detection 2", history)
-				if bytes.Equal(history.GetOldConsPubKey().Bytes(), vote.Validator.Address) {
+				fmt.Println("key rotation detection 2.5", history.GetOldConsPubKey().Bytes(), vote.Validator.Address, history.GetOldConsPubKey().Address())
+				if bytes.Equal(history.GetOldConsPubKey().Address(), vote.Validator.Address) {
 					validator = k.stakingKeeper.Validator(ctx, history.GetOperatorAddress())
 					fmt.Println("key rotation detection 3", validator)
 				}
+				break
 			}
 
 		}

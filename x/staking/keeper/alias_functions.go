@@ -89,8 +89,8 @@ func (k Keeper) ValidatorByConsAddr(ctx sdk.Context, addr sdk.ConsAddress) expor
 }
 
 
-func (k Keeper) RotatedHistoryList(ctx sdk.Context) (historyList []exported.ConsPubKeyRotationHistoryI) {
-	for _, history := range k.GetConsPubKeyRotationHistoryListToProcess(ctx) {
+func (k Keeper) RotatedHistoryList(ctx sdk.Context, recentHeight int64) (historyList []exported.ConsPubKeyRotationHistoryI) {
+	for _, history := range k.GetConsPubKeyRotationHistoryListToProcess(ctx, recentHeight) {
 		historyList = append(historyList, history)
 	}
 	return historyList

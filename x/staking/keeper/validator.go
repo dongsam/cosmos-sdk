@@ -468,12 +468,13 @@ func (k Keeper) ConsPubKeyRotationHistoryIterator(ctx sdk.Context) (iterator sdk
 	return iterator
 }
 
-func (k Keeper) GetConsPubKeyRotationHistoryListToProcess(ctx sdk.Context) (historyList []types.ConsPubKeyRotationHistory) {
+func (k Keeper) GetConsPubKeyRotationHistoryListToProcess(ctx sdk.Context, recentHeight int64) (historyList []types.ConsPubKeyRotationHistory) {
 	iterator := k.ConsPubKeyRotationHistoryIterator(ctx)
+	defer iterator.Close()
 	for ; iterator.Valid(); iterator.Next() {
-		var history types.ConsPubKeyRotationHistory
+		history := types.ConsPubKeyRotationHistory{}
 		k.cdc.MustUnmarshalBinaryLengthPrefixed(iterator.Value(), &history)
-		if history.RotatedHeight == ctx.BlockHeight() {
+		if ctx.BlockHeight() - history.RotatedHeight < recentHeight {
 			historyList = append(historyList, history)
 		}
 	}

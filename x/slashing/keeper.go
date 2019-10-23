@@ -1,6 +1,7 @@
 package slashing
 
 import (
+	"bytes"
 	"fmt"
 	"time"
 
@@ -150,14 +151,53 @@ func (k Keeper) HandleValidatorSignature(ctx sdk.Context, addr crypto.Address, p
 	height := ctx.BlockHeight()
 	consAddr := sdk.ConsAddress(addr)
 	pubkey, err := k.getPubkey(ctx, addr)
+	rotationDetected := false
+	var signInfo types.ValidatorSigningInfo
+	var found bool
 	if err != nil {
-		panic(fmt.Sprintf("Validator consensus-address %s not found", consAddr))
+		fmt.Println("slash key rotation detection 1", ctx.BlockHeight(), k.sk.RotatedHistoryList(ctx, 5))
+		for _, history := range k.sk.RotatedHistoryList(ctx, 5){
+			fmt.Println("slash key rotation detection 2", history)
+			fmt.Println("slash key rotation detection 2.5", history.GetOldConsPubKey().Bytes(), addr, consAddr, history.GetOldConsPubKey().Address(), history.GetNewConsPubKey().Address())
+			if bytes.Equal(history.GetNewConsPubKey().Address(), addr) {
+				//validator = k.sk.Validator(ctx, history.GetOperatorAddress())
+				fmt.Println("slash key rotation detection 3", addr)
+				k.addPubkey(ctx, history.GetNewConsPubKey())
+				pubkey = history.GetNewConsPubKey()
+
+				// TODO: refactoring migrate signInfo
+				signInfo, found = k.MigrateValidatorSigningInfo(ctx, sdk.ConsAddress(history.GetOldConsPubKey().Address()), consAddr)
+				if found {
+					rotationDetected = true
+				}
+				//signInfo, found = k.getValidatorSigningInfo(ctx, sdk.ConsAddress(history.GetOldConsPubKey().Address()))
+				//if found {
+				//	signInfo.Address = consAddr
+				//	rotationDetected = true
+				//}
+				//store.Delete(types.Get__Key(address))
+
+				break
+			}else if bytes.Equal(history.GetOldConsPubKey().Address(), addr) {
+				//validator = k.sk.Validator(ctx, history.GetOperatorAddress())
+				fmt.Println("slash key rotation detection 4", addr)
+				k.addPubkey(ctx, history.GetNewConsPubKey())
+				pubkey = history.GetNewConsPubKey()
+				rotationDetected = true
+				break
+			}
+		}
+		if !rotationDetected{
+			panic(fmt.Sprintf("Validator consensus-address %s not found", consAddr))
+		}
 	}
 
 	// fetch signing info
-	signInfo, found := k.getValidatorSigningInfo(ctx, consAddr)
-	if !found {
-		panic(fmt.Sprintf("Expected signing info for validator %s but not found", consAddr))
+	if !rotationDetected {
+		signInfo, found = k.getValidatorSigningInfo(ctx, consAddr)
+		if !found {
+			panic(fmt.Sprintf("Expected signing info for validator %s but not found", consAddr))
+		}
 	}
 
 	// this is a relative index, so it counts blocks the validator *should* have signed

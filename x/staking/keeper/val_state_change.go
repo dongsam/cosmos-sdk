@@ -136,7 +136,7 @@ func (k Keeper) ApplyAndReturnValidatorSetUpdates(ctx sdk.Context) (updates []ab
 		// equal amounts of tokens; no update required
 	}
 
-	for _, history := range k.GetConsPubKeyRotationHistoryListToProcess(ctx) {
+	for _, history := range k.GetConsPubKeyRotationHistoryListToProcess(ctx, 1) {
 		valAddr := sdk.ValAddress(history.OperatorAddress)
 		validator := k.mustGetValidator(ctx, valAddr)
 

@@ -31,6 +31,8 @@ type StakingKeeper interface {
 
 	// MaxValidators returns the maximum amount of bonded validators
 	MaxValidators(sdk.Context) uint16
+
+	RotatedHistoryList(ctx sdk.Context, recentHeight int64) []exported.ConsPubKeyRotationHistoryI
 }
 
 // StakingHooks event hooks for staking validator object

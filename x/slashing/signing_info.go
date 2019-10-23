@@ -42,6 +42,22 @@ func (k Keeper) SetValidatorSigningInfo(ctx sdk.Context, address sdk.ConsAddress
 	store.Set(types.GetValidatorSigningInfoKey(address), bz)
 }
 
+func (k Keeper) MigrateValidatorSigningInfo(ctx sdk.Context, oldAddress, newAddress sdk.ConsAddress) (info types.ValidatorSigningInfo, success bool) {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.GetValidatorSigningInfoKey(oldAddress))
+	if bz == nil {
+		return
+	}
+	k.cdc.MustUnmarshalBinaryLengthPrefixed(bz, &info)
+
+	info.Address = newAddress
+	bz = k.cdc.MustMarshalBinaryLengthPrefixed(info)
+	store.Set(types.GetValidatorSigningInfoKey(newAddress), bz)
+	store.Delete(types.GetValidatorSigningInfoKey(oldAddress))
+	success = true
+	return
+}
+
 // Stored by *validator* address (not operator address)
 func (k Keeper) getValidatorMissedBlockBitArray(ctx sdk.Context, address sdk.ConsAddress, index int64) (missed bool) {
 	store := ctx.KVStore(k.storeKey)
