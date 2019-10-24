@@ -24,8 +24,8 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 		case types.MsgEditValidator:
 			return handleMsgEditValidator(ctx, msg, k)
 
-		case types.MsgConsPubKeyRotation:
-			return handleMsgConsPubKeyRotation(ctx, msg, k)
+		case types.MsgRotateConsPubKey:
+			return handleMsgRotateConsPubKey(ctx, msg, k)
 
 		case types.MsgDelegate:
 			return handleMsgDelegate(ctx, msg, k)
@@ -228,7 +228,7 @@ func handleMsgEditValidator(ctx sdk.Context, msg types.MsgEditValidator, k keepe
 
 // TODO: add handleMsgValidatorKeyRotation
 
-func handleMsgConsPubKeyRotation(ctx sdk.Context, msg types.MsgConsPubKeyRotation, k keeper.Keeper) sdk.Result {
+func handleMsgRotateConsPubKey(ctx sdk.Context, msg types.MsgRotateConsPubKey, k keeper.Keeper) sdk.Result {
 	// check to see if the validator registered
 	validator, found := k.GetValidator(ctx, msg.ValidatorAddress)
 	if !found {
@@ -251,7 +251,7 @@ func handleMsgConsPubKeyRotation(ctx sdk.Context, msg types.MsgConsPubKeyRotatio
 		}
 	}
 
-	err := k.ConsPubKeyRotation(ctx, msg.NewPubKey, msg.ValidatorAddress)
+	err := k.RotateConsPubKey(ctx, msg.NewPubKey, msg.ValidatorAddress)
 	if err != nil {
 		return err.Result()
 	}
@@ -262,7 +262,7 @@ func handleMsgConsPubKeyRotation(ctx sdk.Context, msg types.MsgConsPubKeyRotatio
 	//k.SetNewValidatorByPowerIndex(ctx, validator)
 
 
-	// TODO: add events, hooks for MsgConsPubKeyRotation
+	// TODO: add events, hooks for MsgRotateConsPubKey
 	// call the after-creation hook
 	//k.AfterValidatorCreated(ctx, validator.OperatorAddress)
 
@@ -275,7 +275,7 @@ func handleMsgConsPubKeyRotation(ctx sdk.Context, msg types.MsgConsPubKeyRotatio
 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
-			types.EventTypeConsPubKeyRotation,
+			types.EventTypeRotateConsPubKey,
 			sdk.NewAttribute(types.AttributeKeyValidator, msg.ValidatorAddress.String()),
 			sdk.NewAttribute("old_pubkey", oldPubKey.Address().String()),
 			sdk.NewAttribute("new_pubkey", msg.NewPubKey.Address().String()),

@@ -310,7 +310,7 @@ func sortNoLongerBonded(last validatorsByAddr) [][]byte {
 	return noLongerBonded
 }
 
-func (k Keeper) ConsPubKeyRotation(ctx sdk.Context, newPubKey crypto.PubKey, address sdk.ValAddress) sdk.Error {
+func (k Keeper) RotateConsPubKey(ctx sdk.Context, newPubKey crypto.PubKey, address sdk.ValAddress) sdk.Error {
 	// first retrieve the old validator record
 	validator, found := k.GetValidator(ctx, address)
 	if !found {

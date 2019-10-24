@@ -336,7 +336,7 @@ func (v Validator) ABCIValidatorUpdateZero() abci.ValidatorUpdate {
 	}
 }
 
-// return validatorUpdate for ConsPubKeyRotation
+// return validatorUpdate for RotateConsPubKey
 func (v Validator) ABCIValidatorDeleteRotatedOldKey(oldConsPubKey crypto.PubKey) abci.ValidatorUpdate {
 	return abci.ValidatorUpdate{
 		PubKey: tmtypes.TM2PB.PubKey(oldConsPubKey),
@@ -491,9 +491,9 @@ func (v Validator) RemoveDelShares(delShares sdk.Dec) (Validator, sdk.Int) {
 
 type ConsPubKeyRotationHistory struct {
 	OperatorAddress         sdk.ValAddress `json:"operator_address" yaml:"operator_address"`       // address of the validator's operator; bech encoded in JSON
-	OldConsPubKey              crypto.PubKey  `json:"old_consensus_pubkey" yaml:"old_consensus_pubkey"`       // the consensus public key of the validator; bech encoded in JSON
-	NewConsPubKey              crypto.PubKey  `json:"new_consensus_pubkey" yaml:"new_consensus_pubkey"`       // the consensus public key of the validator; bech encoded in JSON
-	RotatedHeight              int64  `json:"rotated_height" yaml:"rotated_height"`
+	OldConsPubKey           crypto.PubKey  `json:"old_consensus_pubkey" yaml:"old_consensus_pubkey"`       // the consensus public key of the validator; bech encoded in JSON
+	NewConsPubKey           crypto.PubKey  `json:"new_consensus_pubkey" yaml:"new_consensus_pubkey"`       // the consensus public key of the validator; bech encoded in JSON
+	RotatedHeight           int64  `json:"rotated_height" yaml:"rotated_height"`
 }
 
 // NewValidator - initialize a new validator

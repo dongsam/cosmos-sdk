@@ -253,50 +253,50 @@ func (msg MsgDelegate) ValidateBasic() sdk.Error {
 	return nil
 }
 
-type MsgConsPubKeyRotation struct {
+type MsgRotateConsPubKey struct {
 	ValidatorAddress  sdk.ValAddress  `json:"validator_address" yaml:"validator_address"`
 	NewPubKey         crypto.PubKey   `json:"new_pubkey" yaml:"new_pubkey"`
 }
 
-type MsgConsPubKeyRotationJSON struct {
+type MsgRotateConsPubKeyJSON struct {
 	ValidatorAddress  sdk.ValAddress  `json:"validator_address" yaml:"validator_address"`
 	NewPubKey         string          `json:"new_pubkey" yaml:"new_pubkey"`
 }
 
-func NewMsgConsPubKeyRotation(valAddr sdk.ValAddress, newPubKey crypto.PubKey) MsgConsPubKeyRotation {
-	return MsgConsPubKeyRotation{
+func NewMsgRotateConsPubKey(valAddr sdk.ValAddress, newPubKey crypto.PubKey) MsgRotateConsPubKey {
+	return MsgRotateConsPubKey{
 		ValidatorAddress:  valAddr,
 		NewPubKey: newPubKey,
 	}
 }
 
 //nolint
-func (msg MsgConsPubKeyRotation) Route() string { return RouterKey }
-func (msg MsgConsPubKeyRotation) Type() string  { return "conspubkey_rotation" }
-func (msg MsgConsPubKeyRotation) GetSigners() []sdk.AccAddress {
+func (msg MsgRotateConsPubKey) Route() string { return RouterKey }
+func (msg MsgRotateConsPubKey) Type() string  { return "conspubkey_rotation" }
+func (msg MsgRotateConsPubKey) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{sdk.AccAddress(msg.ValidatorAddress)}
 }
 
 // MarshalJSON implements the json.Marshaler interface to provide custom JSON
-// serialization of the MsgConsPubKeyRotation type.
-func (msg MsgConsPubKeyRotation) MarshalJSON() ([]byte, error) {
-	return json.Marshal(MsgConsPubKeyRotationJSON{
+// serialization of the MsgRotateConsPubKey type.
+func (msg MsgRotateConsPubKey) MarshalJSON() ([]byte, error) {
+	return json.Marshal(MsgRotateConsPubKeyJSON{
 		ValidatorAddress:  msg.ValidatorAddress,
 		NewPubKey:         sdk.MustBech32ifyConsPub(msg.NewPubKey),
 	})
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface to provide custom
-// JSON deserialization of the MsgConsPubKeyRotation type.
-func (msg *MsgConsPubKeyRotation) UnmarshalJSON(bz []byte) error {
-	var msgConsPubKeyRotationJSON MsgConsPubKeyRotationJSON
-	if err := json.Unmarshal(bz, &msgConsPubKeyRotationJSON); err != nil {
+// JSON deserialization of the MsgRotateConsPubKey type.
+func (msg *MsgRotateConsPubKey) UnmarshalJSON(bz []byte) error {
+	var msgRotateConsPubKeyJSON MsgRotateConsPubKeyJSON
+	if err := json.Unmarshal(bz, &msgRotateConsPubKeyJSON); err != nil {
 		return err
 	}
 
-	msg.ValidatorAddress = msgConsPubKeyRotationJSON.ValidatorAddress
+	msg.ValidatorAddress = msgRotateConsPubKeyJSON.ValidatorAddress
 	var err error
-	msg.NewPubKey, err = sdk.GetConsPubKeyBech32(msgConsPubKeyRotationJSON.NewPubKey)
+	msg.NewPubKey, err = sdk.GetConsPubKeyBech32(msgRotateConsPubKeyJSON.NewPubKey)
 	if err != nil {
 		return err
 	}
@@ -305,13 +305,13 @@ func (msg *MsgConsPubKeyRotation) UnmarshalJSON(bz []byte) error {
 }
 
 // get the bytes for the message signer to sign on
-func (msg MsgConsPubKeyRotation) GetSignBytes() []byte {
+func (msg MsgRotateConsPubKey) GetSignBytes() []byte {
 	bz := ModuleCdc.MustMarshalJSON(msg)
 	return sdk.MustSortJSON(bz)
 }
 
 // quick validity check
-func (msg MsgConsPubKeyRotation) ValidateBasic() sdk.Error {
+func (msg MsgRotateConsPubKey) ValidateBasic() sdk.Error {
 	if msg.ValidatorAddress.Empty() {
 		return sdk.NewError(DefaultCodespace, CodeInvalidInput, "nil validator address")
 	}

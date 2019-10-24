@@ -410,7 +410,7 @@ func TestEditValidatorIncreaseMinSelfDelegationBeyondCurrentBond(t *testing.T) {
 }
 
 
-func TestEditValidatorKeyRotation(t *testing.T) {
+func TestEditRotateConsPubKey(t *testing.T) {
 	ctx, _, keeper, _ := keep.CreateTestInput(t, false, 1000)
 
 	addr1, addr2 := sdk.ValAddress(keep.Addrs[0]), sdk.ValAddress(keep.Addrs[1])
@@ -440,12 +440,12 @@ func TestEditValidatorKeyRotation(t *testing.T) {
 	_ = setInstantUnbondPeriod(keeper, ctx)
 
 	// create validator
-	msgConsPubKeyRotation := NewMsgConsPubKeyRotation(addr1, pk3)
+	msgRotateConsPubKey := NewMsgRotateConsPubKey(addr1, pk3)
 
-	err := msgConsPubKeyRotation.ValidateBasic()
+	err := msgRotateConsPubKey.ValidateBasic()
 	fmt.Println(err)
 
-	got2 := handleMsgConsPubKeyRotation(ctx, msgConsPubKeyRotation, keeper)
+	got2 := handleMsgRotateConsPubKey(ctx, msgRotateConsPubKey, keeper)
 	require.True(t, got2.IsOK(), "pubkey rotation %v", got2)
 
 	// must end-block
