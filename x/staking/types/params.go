@@ -22,6 +22,9 @@ const (
 
 	// Default maximum entries in a UBD/RED pair
 	DefaultMaxEntries uint16 = 7
+
+	// Default maximum conspubkey rotations per operator in UnbondingTime
+	DefaultMaxConsPubKeyRotations uint16 = 21
 )
 
 // nolint - Keys for parameter access
@@ -29,6 +32,7 @@ var (
 	KeyUnbondingTime = []byte("UnbondingTime")
 	KeyMaxValidators = []byte("MaxValidators")
 	KeyMaxEntries    = []byte("KeyMaxEntries")
+	KeyMaxConsPubKeyRotations = []byte("MaxConsPubKeyRotations")
 	KeyBondDenom     = []byte("BondDenom")
 )
 
@@ -39,18 +43,20 @@ type Params struct {
 	UnbondingTime time.Duration `json:"unbonding_time" yaml:"unbonding_time"` // time duration of unbonding
 	MaxValidators uint16        `json:"max_validators" yaml:"max_validators"` // maximum number of validators (max uint16 = 65535)
 	MaxEntries    uint16        `json:"max_entries" yaml:"max_entries"`       // max entries for either unbonding delegation or redelegation (per pair/trio)
+	MaxConsPubKeyRotations uint16 `json:"max_conspubkey_rotations" yaml:"max_conspubkey_rotations"` // maximum conspubkey rotations per operator in UnbondingTime
 	// note: we need to be a bit careful about potential overflow here, since this is user-determined
 	BondDenom string `json:"bond_denom" yaml:"bond_denom"` // bondable coin denomination
 }
 
 // NewParams creates a new Params instance
-func NewParams(unbondingTime time.Duration, maxValidators, maxEntries uint16,
+func NewParams(unbondingTime time.Duration, maxValidators, maxEntries, maxConsPubKeyRotations uint16,
 	bondDenom string) Params {
 
 	return Params{
 		UnbondingTime: unbondingTime,
 		MaxValidators: maxValidators,
 		MaxEntries:    maxEntries,
+		MaxConsPubKeyRotations:    maxConsPubKeyRotations,
 		BondDenom:     bondDenom,
 	}
 }
@@ -61,6 +67,7 @@ func (p *Params) ParamSetPairs() params.ParamSetPairs {
 		{KeyUnbondingTime, &p.UnbondingTime},
 		{KeyMaxValidators, &p.MaxValidators},
 		{KeyMaxEntries, &p.MaxEntries},
+		{KeyMaxConsPubKeyRotations, &p.MaxConsPubKeyRotations},
 		{KeyBondDenom, &p.BondDenom},
 	}
 }
@@ -75,7 +82,8 @@ func (p Params) Equal(p2 Params) bool {
 
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
-	return NewParams(DefaultUnbondingTime, DefaultMaxValidators, DefaultMaxEntries, sdk.DefaultBondDenom)
+	return NewParams(DefaultUnbondingTime, DefaultMaxValidators, DefaultMaxEntries, DefaultMaxConsPubKeyRotations,
+		sdk.DefaultBondDenom)
 }
 
 // String returns a human readable string representation of the parameters.

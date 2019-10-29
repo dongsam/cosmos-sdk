@@ -260,7 +260,7 @@ func handleMsgRotateConsPubKey(ctx sdk.Context, msg types.MsgRotateConsPubKey, k
 	//k.SetValidator(ctx, validator)
 	//k.SetValidatorByConsAddr(ctx, validator)
 	//k.SetNewValidatorByPowerIndex(ctx, validator)
-
+	// TODO: add MaxConsKeyRotations param
 
 	// TODO: add events, hooks for MsgRotateConsPubKey
 	// call the after-creation hook

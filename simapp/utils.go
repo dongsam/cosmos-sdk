@@ -462,6 +462,7 @@ func GenStakingGenesisState(
 				return v
 			}(r),
 			7,
+			21,
 			sdk.DefaultBondDenom,
 		),
 		nil,
