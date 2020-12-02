@@ -387,14 +387,16 @@ func (app *BaseApp) snapshot(height int64) {
 // implements Queryable.
 func (app *BaseApp) Query(req abci.RequestQuery) abci.ResponseQuery {
 	defer telemetry.MeasureSince(time.Now(), "abci", "query")
-
+	fmt.Println("req", req)
 	// handle gRPC routes first rather than calling splitPath because '/' characters
 	// are used as part of gRPC paths
 	if grpcHandler := app.grpcQueryRouter.Route(req.Path); grpcHandler != nil {
+		fmt.Println("route to grpc handler", req, grpcHandler, req.Path)
 		return app.handleQueryGRPC(grpcHandler, req)
 	}
 
 	path := splitPath(req.Path)
+	fmt.Println("path", path[0], path)
 	if len(path) == 0 {
 		sdkerrors.QueryResult(sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "no query path provided"))
 	}
